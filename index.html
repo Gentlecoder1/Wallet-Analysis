@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wallet Analysis</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Manrope:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ========== CSS VARIABLES ========== */
+      :root {
+        --background-dark: #0a1628;
+        --background-left: #2563eb;
+        --background-mid: #1e40af;
+        --card-bg: #1e3a8a;
+        --text-main: #ffffff;
+        --text-subtle: #aeb6c1;
+        --accent-blue: #5f9dff;
+        --score-orange: #ff6b00;
+        --score-red: #ff3b30;
+        --score-yellow: #ffb800;
+        --score-green: #00d26a;
+        --chart-purple: #a259ff;
+      }
+
+      /* ========== GLOBAL STYLES ========== */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Sora", "Manrope", sans-serif;
+        background: linear-gradient(
+          135deg,
+          #3b82f6 0%,
+          #2563eb 25%,
+          #1d4ed8 50%,
+          #1e40af 75%,
+          #0a1628 100%
+        );
+        height: 100vh;
+        padding: 15px;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* ========== MAIN CONTAINER ========== */
+      .main-container {
+        width: 100%;
+        max-width: 1200px;
+        max-height: calc(100vh - 30px);
+        min-height: 600px;
+        background: linear-gradient(
+          135deg,
+          #1e3a8a 0%,
+          #1e40af 25%,
+          #1d4ed8 50%,
+          #1e3a8a 75%,
+          #0f172a 100%
+        );
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(8px);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ========== HEADER SECTION ========== */
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .logo-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(45deg, var(--text-main), #e0e7ff);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: var(--background-dark);
+        font-size: 16px;
+      }
+
+      .logo-text h1 {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 2px;
+        color: var(--text-main);
+      }
+
+      .logo-text p {
+        font-size: 12px;
+        color: var(--text-subtle);
+      }
+
+      .forward-button {
+        width: 35px;
+        height: 35px;
+        border: 1px solid rgba(95, 157, 255, 0.3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+        color: var(--text-main);
+        transition: all 0.3s ease;
+      }
+
+      .forward-button:hover {
+        background: rgba(95, 157, 255, 0.1);
+        border-color: var(--accent-blue);
+      }
+
+      .divider {
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--accent-blue),
+          transparent
+        );
+        margin: 15px 0;
+      }
+
+      /* ========== MAIN CONTENT GRID ========== */
+      .main-content {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 2fr 2fr;
+        gap: 20px;
+        overflow: hidden;
+        min-height: 0;
+      }
+
+      /* ========== LEFT SECTION (STATS CARDS) ========== */
+      .left-section {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        overflow-y: auto;
+      }
+
+      .stat-card {
+        background: rgba(13, 27, 63, 0.6);
+        border: 1px solid rgba(95, 157, 255, 0.15);
+        border-radius: 12px;
+        padding: 15px;
+        backdrop-filter: blur(5px);
+        flex-shrink: 0;
+      }
+
+      .stat-card.large {
+        padding: 18px 15px;
+      }
+
+      .stat-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-subtle);
+        margin-bottom: 8px;
+        font-weight: 500;
+      }
+
+      .stat-value {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 5px;
+        color: var(--text-main);
+      }
+
+      .stat-small {
+        font-size: 16px;
+      }
+
+      .progress-bar-partial {
+        height: 4px;
+        background: rgba(0, 0, 0, 0.4);
+        margin-top: 10px;
+        border-radius: 2px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .progress-bar-partial::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 70%;
+        background: #ffffff;
+        border-radius: 2px;
+      }
+
+      /* ========== CENTER SECTION (SCORE CIRCLE) ========== */
+      .center-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        background: rgba(13, 27, 63, 0.6);
+        border: 1px solid rgba(95, 157, 255, 0.15);
+        border-radius: 12px;
+        padding: 20px;
+        backdrop-filter: blur(5px);
+      }
+
+      .score-container {
+        position: relative;
+        width: 300px;
+        height: 300px;
+        margin-bottom: 15px;
+        flex-shrink: 0;
+      }
+
+      .score-circle {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: conic-gradient(
+          from 0deg,
+          var(--score-red) 0deg,
+          var(--score-orange) 60deg,
+          var(--score-yellow) 120deg,
+          #ffb74d 180deg,
+          var(--chart-purple) 240deg,
+          #673ab7 300deg,
+          var(--accent-blue) 360deg
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .score-circle::before {
+        content: "";
+        position: absolute;
+        width: 75%;
+        height: 75%;
+        background: linear-gradient(135deg, #2563eb, #0a1628);
+        border-radius: 50%;
+      }
+
+      .score-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+      }
+
+      .score-number {
+        font-size: 85px;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 6px;
+        color: var(--text-main);
+      }
+
+      .score-label {
+        font-size: 18px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--text-main);
+        font-weight: 600;
+      }
+
+      .risk-level {
+        padding: 8px 20px;
+        font-size: 16px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-main);
+      }
+
+      .risk-level::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        background: var(--score-orange);
+        border-radius: 50%;
+      }
+
+      /* Decorative dots */
+      .decorative-dots {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+
+      .dot {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: var(--chart-purple);
+        border-radius: 50%;
+        opacity: 0.6;
+      }
+
+      .dot1 {
+        top: 15%;
+        left: 20%;
+      }
+      .dot2 {
+        top: 25%;
+        right: 25%;
+      }
+      .dot3 {
+        bottom: 30%;
+        left: 30%;
+      }
+      .dot4 {
+        bottom: 40%;
+        right: 20%;
+      }
+      .dot5 {
+        top: 55%;
+        left: 15%;
+      }
+      .dot6 {
+        top: 65%;
+        right: 30%;
+      }
+
+      /* ========== RIGHT SECTION (INDICATORS) ========== */
+      .right-section {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        min-height: 0;
+        position: relative;
+      }
+
+      .indicators-card {
+        background: rgba(13, 27, 63, 0.6);
+        border: 1px solid rgba(95, 157, 255, 0.15);
+        border-radius: 12px;
+        padding: 20px 20px 50px 20px;
+        backdrop-filter: blur(5px);
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0;
+      }
+
+      .indicator-section {
+        margin-bottom: 25px;
+      }
+
+      .indicator-section:last-child {
+        margin-bottom: 0;
+      }
+
+      .indicator-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 15px;
+      }
+
+      .positive {
+        background: var(--score-green);
+      }
+      .neutral {
+        background: var(--score-yellow);
+      }
+      .risk {
+        background: var(--score-red);
+      }
+
+      .indicator-title {
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-main);
+      }
+
+      .indicator-content {
+        font-size: 11px;
+        color: var(--text-subtle);
+        line-height: 1.4;
+        margin-left: 18px;
+        margin-bottom: 15px;
+      }
+
+      .progress-bar {
+        height: 5px;
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 3px;
+        margin-top: 15px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .progress-fill {
+        height: 100%;
+        border-radius: 3px;
+        position: absolute;
+        left: 0;
+        top: 0;
+      }
+
+      .progress-positive {
+        background: var(--score-green);
+        width: 60%;
+      }
+      .progress-neutral {
+        background: var(--score-yellow);
+        width: 35%;
+      }
+      .progress-risk {
+        background: var(--score-red);
+        width: 20%;
+      }
+
+      /* ========== FOOTER ========== */
+      .footer {
+        position: absolute;
+        bottom: 15px;
+        right: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        color: var(--text-subtle);
+      }
+
+      .footer-logo {
+        width: 20px;
+        height: 20px;
+        background: var(--text-main);
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: var(--background-dark);
+        font-size: 10px;
+      }
+
+      /* ========== RESPONSIVE DESIGN ========== */
+      @media (max-width: 1024px) {
+        body {
+          padding: 10px;
+        }
+        .main-container {
+          padding: 15px;
+          min-height: 500px;
+        }
+        .main-content {
+          grid-template-columns: 1fr;
+          gap: 15px;
+        }
+        .score-container {
+          width: 180px;
+          height: 180px;
+        }
+        .score-number {
+          font-size: 45px;
+        }
+      }
+
+      @media (max-height: 700px) {
+        .main-container {
+          min-height: 550px;
+          max-height: calc(100vh - 20px);
+        }
+        .score-container {
+          width: 200px;
+          height: 200px;
+        }
+        .score-number {
+          font-size: 50px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-container">
+      <div class="header">
+        <div class="logo">
+          <div class="logo-icon">⚪</div>
+          <div class="logo-text">
+            <h1>Wallet Analysis</h1>
+            <p>kd72cs...8jdc6B</p>
+          </div>
+        </div>
+        <div class="forward-button">›</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="main-content">
+        <div class="left-section">
+          <div class="stat-card">
+            <div class="stat-label">ETH BALANCE</div>
+            <div class="stat-value">$3785.10</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">TOKEN VALUE</div>
+            <div class="stat-value">$12785.10</div>
+            <div
+              style="
+                height: 4px;
+                background: var(--accent-blue);
+                margin-top: 10px;
+              "
+            ></div>
+          </div>
+
+          <div class="stat-card large">
+            <div class="stat-label">TOTAL TRANSACTIONS</div>
+            <div class="stat-value stat-small">314</div>
+            <div
+              class="stat-label"
+              style="margin-top: 12px; margin-bottom: 4px"
+            >
+              LAST ACTIVITY
+            </div>
+            <div class="stat-value" style="font-size: 16px; color: white">
+              01.10.2025 16:35:21
+            </div>
+            <div
+              style="
+                height: 4px;
+                background: var(--accent-blue);
+                margin-top: 10px;
+              "
+            ></div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">DAPP CONNECTIONS</div>
+            <div class="stat-value stat-small">2</div>
+            <div class="progress-bar-partial"></div>
+          </div>
+        </div>
+
+        <div class="center-section">
+          <div class="decorative-dots">
+            <div class="dot dot1"></div>
+            <div class="dot dot2"></div>
+            <div class="dot dot3"></div>
+            <div class="dot dot4"></div>
+            <div class="dot dot5"></div>
+            <div class="dot dot6"></div>
+          </div>
+
+          <div class="score-container">
+            <div class="score-circle">
+              <div class="score-content">
+                <div class="score-number">62</div>
+                <div class="score-label">HEX SCORE</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="risk-level">MEDIUM</div>
+        </div>
+
+        <div class="right-section">
+          <div class="indicators-card">
+            <div class="indicator-section">
+              <div class="indicator-header">
+                <div class="indicator-title">✅ POSITIVE INDICATORS</div>
+              </div>
+              <div class="indicator-content">
+                • No specific items to mention.
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill progress-positive"></div>
+              </div>
+            </div>
+
+            <div class="indicator-section">
+              <div class="indicator-header">
+                <div class="indicator-title">⚠️ NEUTRAL FACTORS</div>
+              </div>
+              <div class="indicator-content">
+                • Consider registering an ENS name
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill progress-neutral"></div>
+              </div>
+            </div>
+
+            <div class="indicator-section">
+              <div class="indicator-header">
+                <div class="indicator-title">❌ RISK FACTORS</div>
+              </div>
+              <div class="indicator-content">
+                • No specific items to mention.
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill progress-risk"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer">
+            Powered by HEXLY
+            <div class="footer-logo">H</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
